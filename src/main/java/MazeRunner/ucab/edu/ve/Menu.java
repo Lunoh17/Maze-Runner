@@ -1,17 +1,23 @@
 package MazeRunner.ucab.edu.ve;
+import java.util.Scanner;
 
 public class Menu {
-    public static String pedirCorreo() {
-        return "Por favor, ingrese su correo electrónico: ";
-    }
-    public static String pedirContrasenia() {
-        return "Por favor, ingrese su contraseña: ";
-    }
-    public static Jugador pedirUsuario() {
-        return null;
-    }
-    public static void menuIniciarSesión() {
+    private static final Scanner scanner = new Scanner(System.in);
 
+    public static String pedirCorreo() {
+        System.out.print("Por favor, ingrese su correo electrónico: ");
+        return scanner.nextLine().trim();
+    }
+
+    public static String pedirContrasenia() {
+        System.out.print("Por favor, ingrese su contraseña: ");
+        return scanner.nextLine();
+    }
+
+    public static Jugador menuIniciarSesion() {
+        String correo = pedirCorreo();
+        String contrasenia = pedirContrasenia();
+        return new Jugador(correo, contrasenia);
     }
 
     public static String mostrarMenu() {
