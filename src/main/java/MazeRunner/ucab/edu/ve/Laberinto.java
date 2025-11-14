@@ -1,7 +1,7 @@
 package MazeRunner.ucab.edu.ve;
 
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Laberinto {
     private static final int MAX_DIM = 50;
@@ -9,6 +9,8 @@ public class Laberinto {
     private final int x;
     private final int y;
     private final Celda[][] maze;
+    // store the player so it persists and can be used to start the input loop
+    private final Jugador jugador;
 
     public Laberinto(int size) {
         this(clamp(size), clamp(size));
@@ -25,20 +27,32 @@ public class Laberinto {
         }
         generateMaze(0, 0);
 
-        // Coloca al jugador en la celda de inicio (0,0)
-        Jugador jugador = new Jugador("player@example.com", "password");
-        jugador.celdaActual = maze[0][0];
-        maze[0][0].addEntidad(jugador);
+        // Coloca al jugador en la celda de inicio (0,0) — constructando jugador con referencia al laberinto
+        this.jugador = new Jugador("player@example.com", "password", this);
+        this.jugador.celdaActual = maze[0][0];
+        maze[0][0].addEntidad(this.jugador);
+
+        // Start the player's input loop here so the program stays running using the generated maze.
+        // The loop is implemented inside Jugador.method() and will exit when the player presses 'Q'.
+        this.jugador.method();
+    }
+
+    private static boolean between(int v, int upper) {
+        return (v >= 0) && (v < upper);
+    }
+
+    private static int clamp(int v) {
+        return Math.max(MIN_DIM, Math.min(MAX_DIM, v));
     }
 
     public void display() {
+        Misc.clearScreen();
         for (int i = 0; i < y; i++) {
             // crea la pared norte
             for (int j = 0; j < x; j++) {
                 if ((maze[j][i].valor & DIR.N.bit) == 0) {
                     System.out.print("+---");
-                }
-                else {
+                } else {
                     System.out.print("+   ");
                 }
             }
@@ -48,8 +62,7 @@ public class Laberinto {
                 if ((maze[j][i].valor & DIR.W.bit) == 0) {
                     // closed west wall: print '|' then a space, the cell char and a trailing space => 4 chars
                     System.out.print("| " + maze[j][i].obtenerAscii() + " ");
-                }
-                else {
+                } else {
                     System.out.print("  " + maze[j][i].obtenerAscii() + " ");
                 }
             }
@@ -60,6 +73,27 @@ public class Laberinto {
             System.out.print("+---");
         }
         System.out.println("+");
+    }
+
+    public boolean movimientoJugador(Jugador jugador, DIR direccion) {
+        int jugadorX = jugador.getPosX();
+        int jugadorY = jugador.getPosY();
+
+        int destinoX = jugadorX + direccion.direccionX;
+        int destinoY = jugadorY + direccion.direccionY;
+        if (!between(destinoX, x) || !between(destinoY, y)) {
+            return false; // out of bounds
+        }
+
+        if ((maze[jugadorX][jugadorY].valor & direccion.bit) == 0) {
+            return false; // wall closed
+        }
+
+        maze[jugadorX][jugadorY].removeEntidad(jugador);
+        maze[destinoX][destinoY].addEntidad(jugador);
+        jugador.celdaActual = maze[destinoX][destinoY];
+        jugador.setPosition(destinoX, destinoY);
+        return true;
     }
 
     private void generateMaze(int celdaX, int celdaY) {
@@ -77,21 +111,8 @@ public class Laberinto {
         }
     }
 
-    private static boolean between(int v, int upper) {
-        return (v >= 0) && (v < upper);
-    }
-
-    private static int clamp(int v) {
-        return Math.max(MIN_DIM, Math.min(MAX_DIM, v));
-    }
-
-    private enum DIR {
+    public enum DIR {
         N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
-        private final int bit;
-        private final int direccionX;
-        private final int direccionY;
-        private DIR opposite;
-
         // utiliza el inicializador estático para resolver las referencias anticipadas
         static {
             N.opposite = S;
@@ -100,10 +121,16 @@ public class Laberinto {
             W.opposite = E;
         }
 
+        private final int bit;
+        private final int direccionX;
+        private final int direccionY;
+        private DIR opposite;
+
         DIR(int bit, int direccionX, int direccionY) {
             this.bit = bit;
             this.direccionX = direccionX;
             this.direccionY = direccionY;
         }
-    };
+    }
+
 }

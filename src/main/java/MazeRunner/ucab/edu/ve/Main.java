@@ -1,9 +1,11 @@
 package MazeRunner.ucab.edu.ve;
+
 import java.util.Scanner;
 
 public class Main {
-    static Scanner scanner=new Scanner(System.in);
-    Jugador jugador=new Jugador("Correo Electronico:","Contraseña: ");
+    static Scanner scanner = new Scanner(System.in);
+    Jugador jugador = new Jugador("Correo Electronico:", "Contraseña: ");
+
     public static void main(String[] args) {
 
         System.out.println(Menu.mostrarMenu());

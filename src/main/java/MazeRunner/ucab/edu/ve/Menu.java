@@ -1,4 +1,5 @@
 package MazeRunner.ucab.edu.ve;
+
 import java.util.Scanner;
 
 public class Menu {
