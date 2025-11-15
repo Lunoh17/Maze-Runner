@@ -17,7 +17,7 @@ public class Enemigo extends Trampa implements Movimiento {
 
         boolean movedSuccessfully = laberinto.movimientoEntidad(this, Laberinto.DIR.values()[(int) (Math.random() * 4)]);
         if (!movedSuccessfully) {
-            System.out.println("El Enemigo se metio tremendo coniazo contra la pared (wall or out of bounds).");
+            System.out.println("El Enemigo se pego contra la pared.");
         }
         laberinto.display();
 

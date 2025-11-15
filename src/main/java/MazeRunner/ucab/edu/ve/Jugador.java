@@ -81,6 +81,8 @@ public class Jugador extends Entidad implements Movimiento {
         } else {
             System.out.println("0/" + MAX_VIDA);
         }
+        System.out.println("Puntos: " + puntos);
+        System.out.println("Llaves: " + llaves);
         boolean movedSuccessfully = false;
         while (!movedSuccessfully) {
             System.out.print("Enter move (W/A/S/D) or Q to quit: ");
