@@ -2,6 +2,7 @@ package MazeRunner.ucab.edu.ve;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Vector;
 
 public class Laberinto {
     private static final int MAX_DIM = 50;
@@ -11,6 +12,7 @@ public class Laberinto {
     private final Celda[][] maze;
     // store the player so it persists and can be used to start the input loop
     private final Jugador jugador;
+    private Vector<Entidad> entidades = new Vector<>();
 
     public Laberinto(int size) {
         this(clamp(size), clamp(size));
@@ -26,15 +28,39 @@ public class Laberinto {
             }
         }
         generateMaze(0, 0);
-
+        final int nPeligro = Math.toIntExact(Math.round((double) (this.x * this.y) / 10d)); // 10% de las celdas tendrán peligros
         // Coloca al jugador en la celda de inicio (0,0) — constructando jugador con referencia al laberinto
-        this.jugador = new Jugador("player@example.com", "password", this);
+        this.jugador = new Jugador("player@example.com", "password");
         this.jugador.celdaActual = maze[0][0];
         maze[0][0].addEntidad(this.jugador);
-
+        for (int i = 0; i < nPeligro; i++) {
+            int px, py;
+            do {
+                px = (int) (Math.random() * this.x);
+                py = (int) (Math.random() * this.y);
+            } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
+            Trampa enemigo = (Math.round(Math.random())) == 0 ? new Trampa() : new Enemigo();
+            enemigo.setPosition(px, py);
+            maze[px][py].addEntidad(enemigo);
+            entidades.add(enemigo);
+        }
+        boolean fin = false;
         // Start the player's input loop here so the program stays running using the generated maze.
         // The loop is implemented inside Jugador.method() and will exit when the player presses 'Q'.
-        this.jugador.method();
+        int eJugador = 0;
+        this.display();
+        while (!fin) {
+            eJugador = this.jugador.movimiento(this);
+            if (eJugador != 0) {
+                fin = true;
+                break;
+            }
+            for (Entidad e : entidades) {
+                if (e instanceof Movimiento movimientoEntidad) {
+                    movimientoEntidad.movimiento(this);
+                }
+            }
+        }
     }
 
     private static boolean between(int v, int upper) {
@@ -75,10 +101,9 @@ public class Laberinto {
         System.out.println("+");
     }
 
-    public boolean movimientoJugador(Jugador jugador, DIR direccion) {
-        int jugadorX = jugador.getPosX();
-        int jugadorY = jugador.getPosY();
-
+    public boolean movimientoEntidad(Entidad entidad, DIR direccion) {
+        int jugadorX = entidad.getPosX();
+        int jugadorY = entidad.getPosY();
         int destinoX = jugadorX + direccion.direccionX;
         int destinoY = jugadorY + direccion.direccionY;
         if (!between(destinoX, x) || !between(destinoY, y)) {
@@ -89,10 +114,12 @@ public class Laberinto {
             return false; // wall closed
         }
 
-        maze[jugadorX][jugadorY].removeEntidad(jugador);
-        maze[destinoX][destinoY].addEntidad(jugador);
-        jugador.celdaActual = maze[destinoX][destinoY];
-        jugador.setPosition(destinoX, destinoY);
+        maze[jugadorX][jugadorY].removeEntidad(entidad);
+        maze[destinoX][destinoY].addEntidad(entidad);
+        if (entidad instanceof Jugador jugador) {
+            jugador.celdaActual = maze[destinoX][destinoY];
+        }
+        entidad.setPosition(destinoX, destinoY);
         return true;
     }
 
@@ -113,6 +140,7 @@ public class Laberinto {
 
     public enum DIR {
         N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
+
         // utiliza el inicializador estático para resolver las referencias anticipadas
         static {
             N.opposite = S;

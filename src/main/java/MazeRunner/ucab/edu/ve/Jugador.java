@@ -17,10 +17,9 @@ public class Jugador extends Entidad implements Movimiento {
     private final String correoElectronico;
     private final String contrasenia;
     private final Stack<Short> vidas;
-    private Laberinto laberinto; // reference to the maze this player belongs to
-    private int posX = 0;
-    private int posY = 0;
-    private int score = 0;
+    private int puntos = 0;
+    private int llaves = 0;
+
 
     public Jugador(String correoElectronico, String contrasenia) {
         this.correoElectronico = correoElectronico;
@@ -34,23 +33,14 @@ public class Jugador extends Entidad implements Movimiento {
         this.ascii = '@';
     }
 
-    // New constructor that receives the Laberinto reference
-    public Jugador(String correoElectronico, String contrasenia, Laberinto laberinto) {
-        this(correoElectronico, contrasenia);
-        this.laberinto = laberinto;
+
+    public void recibirPuntos(int puntos) {
+        this.puntos += puntos;
+        System.out.println("Puntuación actual: " + this.puntos);
     }
 
-    public void setPosition(int x, int y) {
-        this.posX = x;
-        this.posY = y;
-    }
-
-    public int getPosX() {
-        return posX;
-    }
-
-    public int getPosY() {
-        return posY;
+    public void recogerLlave() {
+        this.llaves++;
     }
 
     public void recibirDanio(short dano) {
@@ -67,12 +57,6 @@ public class Jugador extends Entidad implements Movimiento {
         }
     }
 
-    // Player overrides display char
-    @Override
-    public char obtenerAscii() {
-        return '@';
-    }
-
     /**
      * @param player
      */
@@ -83,16 +67,15 @@ public class Jugador extends Entidad implements Movimiento {
 
     // Implement Movimiento.method(): input loop (W/A/S/D to move, Q to quit)
     @Override
-    public void method() {
+    public int movimiento(Laberinto laberinto) {
         if (laberinto == null) {
             System.out.println("Jugador no tiene referencia al laberinto.");
-            return;
+            return -1;
         }
 
         System.out.println("Controls: W (up), A (left), S (down), D (right). Q to quit.");
-        laberinto.display();
-
-        while (true) {
+        boolean movedSuccessfully = false;
+        while (!movedSuccessfully) {
             System.out.print("Enter move (W/A/S/D) or Q to quit: ");
             String rawInput = scanner.nextLine();
             if (rawInput == null || rawInput.isEmpty()) {
@@ -101,15 +84,16 @@ public class Jugador extends Entidad implements Movimiento {
             char inputChar = Character.toLowerCase(rawInput.charAt(0));
             if (inputChar == 'q') {
                 System.out.println("Exiting player control.");
-                break;
+                laberinto.display();
+                return 1;
             }
-            boolean movedSuccessfully = laberinto.movimientoJugador(this, DIRECTIONS_MAP.get(inputChar));
+            movedSuccessfully = laberinto.movimientoEntidad(this, DIRECTIONS_MAP.get(inputChar));
             if (!movedSuccessfully) {
                 System.out.println("Cannot move in that direction (wall or out of bounds).");
-            } else {
-                laberinto.display();
             }
         }
+        laberinto.display();
+        return 0;
     }
 
 }

@@ -15,7 +15,7 @@ public class Celda {
             return ' ';
         } else if (contenido.size() > 1) {
             // Retorna un carácter especial si hay múltiples entidades
-            return ((char) contenido.size());
+            return ((char) cantidadEntidades());
         } else {
             // Use the entity's own obtenerAscii method
             return contenido.iterator().next().obtenerAscii();

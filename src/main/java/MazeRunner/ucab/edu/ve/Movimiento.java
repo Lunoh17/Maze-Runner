@@ -1,5 +1,5 @@
 package MazeRunner.ucab.edu.ve;
 
 public interface Movimiento {
-    void method();
+    int movimiento(Laberinto laberinto);
 }

@@ -6,10 +6,11 @@ public class Llave extends Entidad{
     }
 
     /**
-     * @param player
+     * @param jugador
      */
     @Override
-    public void interact(Jugador player) {
-
+    public void interact(Jugador jugador) {
+        System.out.println("¡Has recogido la llave!, ya puedes ir a la salida.");
+        jugador.recogerLlave();
     }
 }
