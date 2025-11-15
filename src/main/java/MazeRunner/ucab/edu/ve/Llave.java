@@ -12,5 +12,6 @@ public class Llave extends Entidad {
     public void interact(Jugador jugador) {
         System.out.println("¡Has recogido la llave!, ya puedes ir a la salida.");
         jugador.recogerLlave();
+        jugador.celdaActual.removeEntidad(this);
     }
 }

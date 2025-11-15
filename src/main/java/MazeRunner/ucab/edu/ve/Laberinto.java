@@ -1,16 +1,16 @@
 package MazeRunner.ucab.edu.ve;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Vector;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Vector;
 
 public class Laberinto {
     private static final int MAX_DIM = 50;
@@ -18,12 +18,24 @@ public class Laberinto {
     private final int x;
     private final int y;
     private final Celda[][] maze;
+    private final Vector<Entidad> entidades = new Vector<>();
     // store the player so it persists and can be used to start the input loop
     public Jugador jugador;
-    private final Vector<Entidad> entidades = new Vector<>();
 
     public Laberinto(int size) {
         this(clamp(size), clamp(size));
+    }
+
+    // Private constructor used by cargarJson to build the empty grid without starting the loop
+    private Laberinto(int x, int y, boolean skipGameLoop) {
+        this.x = x;
+        this.y = y;
+        maze = new Celda[this.x][this.y];
+        for (int i = 0; i < maze.length; i++) {
+            for (int j = 0; j < maze[i].length; j++) {
+                maze[i][j] = new Celda();
+            }
+        }
     }
 
     public Laberinto(int x, int y) {
@@ -47,7 +59,7 @@ public class Laberinto {
                 px = (int) (Math.random() * this.x);
                 py = (int) (Math.random() * this.y);
             } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
-            Entidad cristales = new Cristal();
+            Cristal cristales = new Cristal();
             cristales.setPosition(px, py);
             maze[px][py].addEntidad(cristales);
             entidades.add(cristales);
@@ -63,58 +75,54 @@ public class Laberinto {
             maze[px][py].addEntidad(enemigo);
             entidades.add(enemigo);
         }
+        for (int i = 0; i < 1; i++) {
+            int px, py;
+            do {
+                px = (int) (Math.random() * this.x);
+                py = (int) (Math.random() * this.y);
+            } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
+            Llave llave = new Llave();
+            llave.setPosition(px, py);
+            maze[px][py].addEntidad(llave);
+            entidades.add(llave);
+        }
+        for (int i = 0; i < 1; i++) {
+            int px, py;
+            switch (Math.toIntExact(Math.round(Math.random() * 3))) {
+                case 0 -> {
+                    do {
+                        px = (int) (Math.random() * this.x);
+                        py = 0;
+                    } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
+                }
+                case 1 -> {
+                    do {
+                        px = this.x-1 ;
+                        py = (int) (Math.random() * this.y);
+                    } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
+
+                }
+                case 2 -> {
+                    do {
+                        px = (int) (Math.random() * this.x);
+                        py = this.y-1;
+                    } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
+                }
+                default -> {
+                    do {
+                        px = 0;
+                        py = (int) (Math.random() * this.y);
+                    } while ((px == 0 && py == 0) || !maze[px][py].obtenerContenido().isEmpty());
+                }
+            }
+            Puerta puerta = new Puerta();
+            puerta.setPosition(px, py);
+            maze[px][py].addEntidad(puerta);
+            entidades.add(puerta);
+        }
+
     }
 
-    public void jugar(){
-        boolean fin = false;
-        // Start the player's input loop here so the program stays running usando el laberinto generado.
-        // The loop is implementado inside Jugador.method() and will exit when the player presses 'Q'.
-        int eJugador = 0;
-        this.display();
-        while (!fin) {
-            eJugador = this.jugador.movimiento(this);
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-            if (eJugador != 0) {
-                ControladorBD.guardar(this);
-                fin = true;
-                break;
-            }
-            for (Entidad e : entidades) {
-                if (e instanceof Movimiento movimientoEntidad) {
-                    movimientoEntidad.movimiento(this);
-                }
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-            if (jugador.celdaActual.cantidadEntidades() > 1) {
-                for (Entidad e : jugador.celdaActual.obtenerContenido()) {
-                    e.interact(jugador);
-                    if (e.ascii == 'K' || e.ascii == 'C') {
-                        entidades.removeElement(e);
-                    }
-                }
-            }
-        }
-    }
-
-    // Private constructor used by cargarJson to build the empty grid without starting the loop
-    private Laberinto(int x, int y, boolean skipGameLoop) {
-        this.x = x;
-        this.y = y;
-        maze = new Celda[this.x][this.y];
-        for (int i = 0; i < maze.length; i++) {
-            for (int j = 0; j < maze[i].length; j++) {
-                maze[i][j] = new Celda();
-            }
-        }
-    }
 
     private static boolean between(int v, int upper) {
         return (v >= 0) && (v < upper);
@@ -123,97 +131,6 @@ public class Laberinto {
     private static int clamp(int v) {
         return Math.max(MIN_DIM, Math.min(MAX_DIM, v));
     }
-
-    public void display() {
-        Misc.clearScreen();
-        for (int i = 0; i < y; i++) {
-            // crea la pared norte
-            for (int j = 0; j < x; j++) {
-                if ((maze[j][i].valor & DIR.N.bit) == 0) {
-                    System.out.print("+---");
-                } else {
-                    System.out.print("+   ");
-                }
-            }
-            System.out.println("+");
-            // crea la pared oeste
-            for (int j = 0; j < x; j++) {
-                if ((maze[j][i].valor & DIR.W.bit) == 0) {
-                    // closed west wall: print '|' then a space, the cell char and a trailing space => 4 chars
-                    System.out.print("| " + maze[j][i].obtenerAscii() + " ");
-                } else {
-                    System.out.print("  " + maze[j][i].obtenerAscii() + " ");
-                }
-            }
-            System.out.println("|");
-        }
-        // crea la pared sur
-        for (int j = 0; j < x; j++) {
-            System.out.print("+---");
-        }
-        System.out.println("+");
-    }
-
-    public boolean movimientoEntidad(Entidad entidad, DIR direccion) {
-        int jugadorX = entidad.getPosX();
-        int jugadorY = entidad.getPosY();
-        int destinoX = jugadorX + direccion.direccionX;
-        int destinoY = jugadorY + direccion.direccionY;
-        if (!between(destinoX, x) || !between(destinoY, y)) {
-            return false; // out of bounds
-        }
-
-        if ((maze[jugadorX][jugadorY].valor & direccion.bit) == 0) {
-            return false; // wall closed
-        }
-
-        maze[jugadorX][jugadorY].removeEntidad(entidad);
-        maze[destinoX][destinoY].addEntidad(entidad);
-        if (entidad instanceof Jugador jugador) {
-            jugador.celdaActual = maze[destinoX][destinoY];
-        }
-        entidad.setPosition(destinoX, destinoY);
-        return true;
-    }
-
-    private void generateMaze(int celdaX, int celdaY) {
-        DIR[] direccion = DIR.values();
-        Collections.shuffle(Arrays.asList(direccion));
-        for (DIR dir : direccion) {
-            int vecinoX = celdaX + dir.direccionX;
-            int vecinoY = celdaY + dir.direccionY;
-            if (between(vecinoX, x) && between(vecinoY, y)
-                    && (maze[vecinoX][vecinoY].valor == 0)) {
-                maze[celdaX][celdaY].valor |= dir.bit;
-                maze[vecinoX][vecinoY].valor |= dir.opposite.bit;
-                generateMaze(vecinoX, vecinoY);
-            }
-        }
-    }
-
-    public enum DIR {
-        N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
-
-        // utiliza el inicializador estático para resolver las referencias anticipadas
-        static {
-            N.opposite = S;
-            S.opposite = N;
-            E.opposite = W;
-            W.opposite = E;
-        }
-
-        private final int bit;
-        private final int direccionX;
-        private final int direccionY;
-        private DIR opposite;
-
-        DIR(int bit, int direccionX, int direccionY) {
-            this.bit = bit;
-            this.direccionX = direccionX;
-            this.direccionY = direccionY;
-        }
-    }
-
 
     /**
      * Carga el laberinto desde el archivo laberinto.json ubicado en el directorio del proyecto.
@@ -363,6 +280,151 @@ public class Laberinto {
                 e.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
             }
             return e;
+        }
+    }
+
+    private boolean finParida(int estado) throws Throwable {
+        ControladorBD.guardar(this);
+        switch (estado) {
+            case -1 -> System.out.println("Has perdido todas tus vidas. ¡Juego terminado!");
+            case 0 -> System.out.println("¡Felicidades! ¡Has escapado del laberinto!");
+            case 1 -> System.out.println("¡Te estaremos esperando! ¡Vuelve pronto!");
+            default -> System.out.println("Has salido del juego. ¡Hasta la próxima!");
+        }
+        return true;
+    }
+
+    public boolean jugar() {
+        boolean fin = false;
+        // Start the player's input loop here so the program stays running usando el laberinto generado.
+        // The loop is implementado inside Jugador.method() and will exit when the player presses 'Q'.
+        int eJugador = 0;
+        this.display();
+        while (!fin) {
+            eJugador = this.jugador.movimiento(this);
+            if (eJugador != 0) {
+                ControladorBD.guardar(this);
+                fin = true;
+                break;
+            }
+            for (Entidad e : entidades) {
+                if (e instanceof Movimiento movimientoEntidad) {
+                    movimientoEntidad.movimiento(this);
+                }
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (jugador.celdaActual.cantidadEntidades() > 1) {
+                for (Entidad e : jugador.celdaActual.obtenerContenido()) {
+                    e.interact(jugador);
+                    if (e.ascii == 'K' || e.ascii == 'C') {
+                        entidades.removeElement(e);
+                    }
+                }
+                fin = jugador.isEscapado();
+                if (!jugador.taVivo()) {
+                    eJugador = -1;
+                    fin = true;
+                }
+            }
+        }
+        try {
+            return this.finParida(eJugador);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void display() {
+        Misc.clearScreen();
+        for (int i = 0; i < y; i++) {
+            // crea la pared norte
+            for (int j = 0; j < x; j++) {
+                if ((maze[j][i].valor & DIR.N.bit) == 0) {
+                    System.out.print("+---");
+                } else {
+                    System.out.print("+   ");
+                }
+            }
+            System.out.println("+");
+            // crea la pared oeste
+            for (int j = 0; j < x; j++) {
+                if ((maze[j][i].valor & DIR.W.bit) == 0) {
+                    // closed west wall: print '|' then a space, the cell char and a trailing space => 4 chars
+                    System.out.print("| " + maze[j][i].obtenerAscii() + " ");
+                } else {
+                    System.out.print("  " + maze[j][i].obtenerAscii() + " ");
+                }
+            }
+            System.out.println("|");
+        }
+        // crea la pared sur
+        for (int j = 0; j < x; j++) {
+            System.out.print("+---");
+        }
+        System.out.println("+");
+    }
+
+    public boolean movimientoEntidad(Entidad entidad, DIR direccion) {
+        int jugadorX = entidad.getPosX();
+        int jugadorY = entidad.getPosY();
+        int destinoX = jugadorX + direccion.direccionX;
+        int destinoY = jugadorY + direccion.direccionY;
+        if (!between(destinoX, x) || !between(destinoY, y)) {
+            return false; // out of bounds
+        }
+
+        if ((maze[jugadorX][jugadorY].valor & direccion.bit) == 0) {
+            return false; // wall closed
+        }
+
+        maze[jugadorX][jugadorY].removeEntidad(entidad);
+        maze[destinoX][destinoY].addEntidad(entidad);
+        if (entidad instanceof Jugador jugador) {
+            jugador.celdaActual = maze[destinoX][destinoY];
+        }
+        entidad.setPosition(destinoX, destinoY);
+        return true;
+    }
+
+    private void generateMaze(int celdaX, int celdaY) {
+        DIR[] direccion = DIR.values();
+        Collections.shuffle(Arrays.asList(direccion));
+        for (DIR dir : direccion) {
+            int vecinoX = celdaX + dir.direccionX;
+            int vecinoY = celdaY + dir.direccionY;
+            if (between(vecinoX, x) && between(vecinoY, y)
+                    && (maze[vecinoX][vecinoY].valor == 0)) {
+                maze[celdaX][celdaY].valor |= dir.bit;
+                maze[vecinoX][vecinoY].valor |= dir.opposite.bit;
+                generateMaze(vecinoX, vecinoY);
+            }
+        }
+    }
+
+    public enum DIR {
+        N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
+
+        // utiliza el inicializador estático para resolver las referencias anticipadas
+        static {
+            N.opposite = S;
+            S.opposite = N;
+            E.opposite = W;
+            W.opposite = E;
+        }
+
+        private final int bit;
+        private final int direccionX;
+        private final int direccionY;
+        private DIR opposite;
+
+        DIR(int bit, int direccionX, int direccionY) {
+            this.bit = bit;
+            this.direccionX = direccionX;
+            this.direccionY = direccionY;
         }
     }
 }

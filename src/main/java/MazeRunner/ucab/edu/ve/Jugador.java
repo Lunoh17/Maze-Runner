@@ -1,10 +1,11 @@
 package MazeRunner.ucab.edu.ve;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 public class Jugador extends Entidad implements Movimiento {
     final static short MAX_VIDA = 10;
@@ -21,6 +22,7 @@ public class Jugador extends Entidad implements Movimiento {
     public transient Celda celdaActual;
     private int puntos = 0;
     private int llaves = 0;
+    private boolean escapado = false;
 
     public Jugador(String correoElectronico, String contrasenia) {
         this.correoElectronico = correoElectronico;
@@ -32,6 +34,43 @@ public class Jugador extends Entidad implements Movimiento {
         }
         // optional internal ascii char (keeps ordering stable)
         this.ascii = '@';
+    }
+
+    // Static factory to reconstruct a Jugador from a Gson JsonObject
+    public static Jugador fromJson(JsonObject obj) {
+        String correo = obj.has("correoElectronico") ? obj.get("correoElectronico").getAsString() : "player@example.com";
+        String pass = obj.has("contrasenia") ? obj.get("contrasenia").getAsString() : "password";
+        Jugador j = new Jugador(correo, pass);
+        if (obj.has("ascii")) {
+            String s = obj.get("ascii").getAsString();
+            if (s != null && !s.isEmpty()) {
+                j.ascii = s.charAt(0);
+            }
+        }
+        if (obj.has("vidas")) {
+            JsonArray va = obj.getAsJsonArray("vidas");
+            j.vidas.clear();
+            for (int i = 0; i < va.size(); i++) {
+                short v = (short) va.get(i).getAsInt();
+                j.vidas.push(v);
+            }
+        }
+        if (obj.has("puntos")) {
+            j.puntos = obj.get("puntos").getAsInt();
+        }
+        if (obj.has("llaves")) {
+            j.llaves = obj.get("llaves").getAsInt();
+        }
+        if (obj.has("posX") && obj.has("posY")) {
+            int px = obj.get("posX").getAsInt();
+            int py = obj.get("posY").getAsInt();
+            j.setPosition(px, py);
+        }
+        return j;
+    }
+
+    public boolean isEscapado() {
+        return escapado;
     }
 
     public void recibirPuntos(int puntos) {
@@ -53,7 +92,8 @@ public class Jugador extends Entidad implements Movimiento {
                 System.out.println("¡Has perdido una vida!");
             }
         } else {
-            System.out.println("¡No te quedan vidas!");
+//            System.out.println("¡No te quedan vidas!");
+            this.celdaActual.removeEntidad(this);
         }
     }
 
@@ -64,7 +104,9 @@ public class Jugador extends Entidad implements Movimiento {
     public void interact(Jugador player) {
 
     }
-
+    public boolean taVivo(){
+        return !vidas.isEmpty();
+    }
     // Implement Movimiento.method(): input loop (W/A/S/D to move, Q to quit)
     @Override
     public int movimiento(Laberinto laberinto) {
@@ -105,37 +147,12 @@ public class Jugador extends Entidad implements Movimiento {
         return 0;
     }
 
-    // Static factory to reconstruct a Jugador from a Gson JsonObject
-    public static Jugador fromJson(JsonObject obj) {
-        String correo = obj.has("correoElectronico") ? obj.get("correoElectronico").getAsString() : "player@example.com";
-        String pass = obj.has("contrasenia") ? obj.get("contrasenia").getAsString() : "password";
-        Jugador j = new Jugador(correo, pass);
-        if (obj.has("ascii")) {
-            String s = obj.get("ascii").getAsString();
-            if (s != null && !s.isEmpty()) {
-                j.ascii = s.charAt(0);
-            }
-        }
-        if (obj.has("vidas")) {
-            JsonArray va = obj.getAsJsonArray("vidas");
-            j.vidas.clear();
-            for (int i = 0; i < va.size(); i++) {
-                short v = (short) va.get(i).getAsInt();
-                j.vidas.push(v);
-            }
-        }
-        if (obj.has("puntos")) {
-            j.puntos = obj.get("puntos").getAsInt();
-        }
-        if (obj.has("llaves")) {
-            j.llaves = obj.get("llaves").getAsInt();
-        }
-        if (obj.has("posX") && obj.has("posY")) {
-            int px = obj.get("posX").getAsInt();
-            int py = obj.get("posY").getAsInt();
-            j.setPosition(px, py);
-        }
-        return j;
+    public boolean tieneLlave() {
+        return llaves > 0;
     }
 
+    public void escapar() {
+        System.out.println("Jugador ha escapado del laberinto con " + puntos + " puntos.");
+        this.escapado = true;
+    }
 }
