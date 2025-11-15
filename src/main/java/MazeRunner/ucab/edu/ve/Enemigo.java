@@ -23,4 +23,5 @@ public class Enemigo extends Trampa implements Movimiento {
 
         return 0;
     }
+
 }

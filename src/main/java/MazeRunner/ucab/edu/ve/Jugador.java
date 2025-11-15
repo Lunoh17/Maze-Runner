@@ -3,6 +3,8 @@ package MazeRunner.ucab.edu.ve;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class Jugador extends Entidad implements Movimiento {
     final static short MAX_VIDA = 10;
@@ -13,13 +15,12 @@ public class Jugador extends Entidad implements Movimiento {
             'd', Laberinto.DIR.E
     );
     static Scanner scanner = new Scanner(System.in);
-    public Celda celdaActual;
     private final String correoElectronico;
     private final String contrasenia;
     private final Stack<Short> vidas;
+    public transient Celda celdaActual;
     private int puntos = 0;
     private int llaves = 0;
-
 
     public Jugador(String correoElectronico, String contrasenia) {
         this.correoElectronico = correoElectronico;
@@ -32,7 +33,6 @@ public class Jugador extends Entidad implements Movimiento {
         // optional internal ascii char (keeps ordering stable)
         this.ascii = '@';
     }
-
 
     public void recibirPuntos(int puntos) {
         this.puntos += puntos;
@@ -74,6 +74,13 @@ public class Jugador extends Entidad implements Movimiento {
         }
 
         System.out.println("Controls: W (up), A (left), S (down), D (right). Q to quit.");
+        System.out.println("Vidas: " + vidas.size());
+        System.out.print("Energia: ");
+        if (!vidas.isEmpty()) {
+            System.out.println(vidas.peek() + "/" + MAX_VIDA);
+        } else {
+            System.out.println("0/" + MAX_VIDA);
+        }
         boolean movedSuccessfully = false;
         while (!movedSuccessfully) {
             System.out.print("Enter move (W/A/S/D) or Q to quit: ");
@@ -94,6 +101,39 @@ public class Jugador extends Entidad implements Movimiento {
         }
         laberinto.display();
         return 0;
+    }
+
+    // Static factory to reconstruct a Jugador from a Gson JsonObject
+    public static Jugador fromJson(JsonObject obj) {
+        String correo = obj.has("correoElectronico") ? obj.get("correoElectronico").getAsString() : "player@example.com";
+        String pass = obj.has("contrasenia") ? obj.get("contrasenia").getAsString() : "password";
+        Jugador j = new Jugador(correo, pass);
+        if (obj.has("ascii")) {
+            String s = obj.get("ascii").getAsString();
+            if (s != null && !s.isEmpty()) {
+                j.ascii = s.charAt(0);
+            }
+        }
+        if (obj.has("vidas")) {
+            JsonArray va = obj.getAsJsonArray("vidas");
+            j.vidas.clear();
+            for (int i = 0; i < va.size(); i++) {
+                short v = (short) va.get(i).getAsInt();
+                j.vidas.push(v);
+            }
+        }
+        if (obj.has("puntos")) {
+            j.puntos = obj.get("puntos").getAsInt();
+        }
+        if (obj.has("llaves")) {
+            j.llaves = obj.get("llaves").getAsInt();
+        }
+        if (obj.has("posX") && obj.has("posY")) {
+            int px = obj.get("posX").getAsInt();
+            int py = obj.get("posY").getAsInt();
+            j.setPosition(px, py);
+        }
+        return j;
     }
 
 }

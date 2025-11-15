@@ -7,17 +7,20 @@ public class Main {
     Jugador jugador = new Jugador("Correo Electronico:", "Contraseña: ");
 
     public static void main(String[] args) {
-
+        Laberinto lab;
         System.out.println(Menu.mostrarMenu());
         switch (scanner.nextLine()) {
             case "1":
                 System.out.print("Introduzca el tamaño del laberinto (max 50): ");
                 int n = Integer.parseInt(scanner.nextLine());
-                Laberinto lab = new Laberinto(n);
-                lab.display();
+                lab = new Laberinto(n);
+                lab.jugar();
                 break;
             case "2":
                 System.out.println("Cargar Juego");
+                lab= Laberinto.cargarJson();
+                assert lab != null;
+                lab.jugar();
                 break;
             case "3":
                 System.out.println("Estadistica");

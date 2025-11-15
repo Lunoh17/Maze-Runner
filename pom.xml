@@ -14,20 +14,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.13.2</version>
+        </dependency>
+    </dependencies>
+
+
     <build>
         <plugins>
-<!--
-            &lt;!&ndash; Plugin para ejecutar la aplicación &ndash;&gt;
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    &lt;!&ndash; Clase principal con método main &ndash;&gt;
-                    <mainClass>MazeRunner.ucab.edu.ve.Main</mainClass>
-                </configuration>
-            </plugin>
--->
             <!-- Ensure the manifest contains your main class -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>

@@ -1,6 +1,6 @@
 package MazeRunner.ucab.edu.ve;
 
-public class Llave extends Entidad{
+public class Llave extends Entidad {
     public Llave() {
         this.ascii = 'K';
     }

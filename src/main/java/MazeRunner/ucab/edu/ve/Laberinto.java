@@ -3,6 +3,14 @@ package MazeRunner.ucab.edu.ve;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Vector;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class Laberinto {
     private static final int MAX_DIM = 50;
@@ -11,8 +19,8 @@ public class Laberinto {
     private final int y;
     private final Celda[][] maze;
     // store the player so it persists and can be used to start the input loop
-    private final Jugador jugador;
-    private Vector<Entidad> entidades = new Vector<>();
+    public Jugador jugador;
+    private final Vector<Entidad> entidades = new Vector<>();
 
     public Laberinto(int size) {
         this(clamp(size), clamp(size));
@@ -44,14 +52,23 @@ public class Laberinto {
             maze[px][py].addEntidad(enemigo);
             entidades.add(enemigo);
         }
+    }
+
+    public void jugar(){
         boolean fin = false;
-        // Start the player's input loop here so the program stays running using the generated maze.
-        // The loop is implemented inside Jugador.method() and will exit when the player presses 'Q'.
+        // Start the player's input loop here so the program stays running usando el laberinto generado.
+        // The loop is implementado inside Jugador.method() and will exit when the player presses 'Q'.
         int eJugador = 0;
         this.display();
         while (!fin) {
             eJugador = this.jugador.movimiento(this);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
             if (eJugador != 0) {
+                ControladorBD.guardar(this);
                 fin = true;
                 break;
             }
@@ -59,7 +76,180 @@ public class Laberinto {
                 if (e instanceof Movimiento movimientoEntidad) {
                     movimientoEntidad.movimiento(this);
                 }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
             }
+            if (jugador.celdaActual.cantidadEntidades() > 1) {
+                for (Entidad e : jugador.celdaActual.obtenerContenido()) {
+                    e.interact(jugador);
+                }
+            }
+        }
+    }
+
+    // Private constructor used by cargarJson to build the empty grid without starting the loop
+    private Laberinto(int x, int y, boolean skipGameLoop) {
+        this.x = x;
+        this.y = y;
+        maze = new Celda[this.x][this.y];
+        for (int i = 0; i < maze.length; i++) {
+            for (int j = 0; j < maze[i].length; j++) {
+                maze[i][j] = new Celda();
+            }
+        }
+    }
+
+    /**
+     * Carga el laberinto desde el archivo laberinto.json ubicado en el directorio del proyecto.
+     * Reconstruye celdas, jugador y entidades, y enlaza referencias.
+     */
+    public static Laberinto cargarJson() {
+        String projectRoot = System.getProperty("user.dir");
+        File inFile = new File(projectRoot, "laberinto.json");
+        if (!inFile.exists()) {
+            System.err.println("No se encontró laberinto.json en: " + inFile.getAbsolutePath());
+            return null;
+        }
+        try (FileReader fr = new FileReader(inFile)) {
+            JsonObject root = JsonParser.parseReader(fr).getAsJsonObject();
+            int x = root.has("x") ? root.get("x").getAsInt() : 0;
+            int y = root.has("y") ? root.get("y").getAsInt() : 0;
+            Laberinto lab = new Laberinto(x, y, true);
+
+            // Fill maze cell values and contents
+            if (root.has("maze")) {
+                JsonArray mazeArray = root.getAsJsonArray("maze");
+                for (int i = 0; i < mazeArray.size() && i < lab.maze.length; i++) {
+                    JsonArray col = mazeArray.get(i).getAsJsonArray();
+                    for (int j = 0; j < col.size() && j < lab.maze[i].length; j++) {
+                        JsonObject cellObj = col.get(j).getAsJsonObject();
+                        if (cellObj.has("valor")) {
+                            lab.maze[i][j].valor = cellObj.get("valor").getAsInt();
+                        }
+                        // contents will be reconstructed below using root.entidades and root.jugador primarily
+                    }
+                }
+            }
+
+            // First reconstruct jugador if present at root
+            if (root.has("jugador")) {
+                JsonObject jObj = root.getAsJsonObject("jugador");
+                Jugador j = Jugador.fromJson(jObj);
+                lab.jugador = j;
+                // place jugador in the maze if valid positions exist
+                if (j.getPosX() >= 0 && j.getPosY() >= 0 && j.getPosX() < lab.x && j.getPosY() < lab.y) {
+                    j.celdaActual = lab.maze[j.getPosX()][j.getPosY()];
+                    lab.maze[j.getPosX()][j.getPosY()].addEntidad(j);
+                }
+            }
+
+            // Reconstruct entidades list from root.entidades (preferred) or from scanning cells
+            if (root.has("entidades")) {
+                JsonArray ents = root.getAsJsonArray("entidades");
+                for (JsonElement ee : ents) {
+                    JsonObject eo = ee.getAsJsonObject();
+                    Entidad entidad = crearEntidadDesdeJson(eo);
+                    if (entidad != null) {
+                        int px = entidad.getPosX();
+                        int py = entidad.getPosY();
+                        if (px >= 0 && py >= 0 && px < lab.x && py < lab.y) {
+                            lab.maze[px][py].addEntidad(entidad);
+                        }
+                        if (entidad instanceof Trampa || entidad instanceof Enemigo) {
+                            lab.entidades.add(entidad);
+                        }
+                    }
+                }
+            } else {
+                // fallback: scan cells for contenido arrays
+                if (root.has("maze")) {
+                    JsonArray mazeArray = root.getAsJsonArray("maze");
+                    for (int i = 0; i < mazeArray.size() && i < lab.maze.length; i++) {
+                        JsonArray col = mazeArray.get(i).getAsJsonArray();
+                        for (int j = 0; j < col.size() && j < lab.maze[i].length; j++) {
+                            JsonObject cellObj = col.get(j).getAsJsonObject();
+                            if (cellObj.has("contenido")) {
+                                JsonArray content = cellObj.getAsJsonArray("contenido");
+                                for (JsonElement ce : content) {
+                                    Entidad entidad = crearEntidadDesdeJson(ce.getAsJsonObject());
+                                    if (entidad != null) {
+                                        lab.maze[i][j].addEntidad(entidad);
+                                        if (entidad instanceof Trampa || entidad instanceof Enemigo) {
+                                            lab.entidades.add(entidad);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return lab;
+        } catch (IOException ex) {
+            System.err.println("Error leyendo laberinto.json: " + ex.getMessage());
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    // Helper to construct appropriate Entidad subclass from JSON representation
+    private static Entidad crearEntidadDesdeJson(JsonObject eo) {
+        if (eo == null) return null;
+        // Player is handled separately
+        if (eo.has("correoElectronico") || eo.has("contrasenia")) {
+            return Jugador.fromJson(eo);
+        }
+        char ascii = eo.has("ascii") ? eo.get("ascii").getAsString().charAt(0) : '?';
+        if (ascii == 'E') {
+            Enemigo en = new Enemigo();
+            if (eo.has("danio")) {
+                try {
+                    java.lang.reflect.Field f = Trampa.class.getDeclaredField("danio");
+                    f.setAccessible(true);
+                    f.setShort(en, (short) eo.get("danio").getAsInt());
+                } catch (Exception ignored) {
+                }
+            }
+            if (eo.has("posX") && eo.has("posY")) {
+                en.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return en;
+        } else if (ascii == 'T') {
+            Trampa t = new Trampa();
+            if (eo.has("danio")) {
+                try {
+                    java.lang.reflect.Field f = Trampa.class.getDeclaredField("danio");
+                    f.setAccessible(true);
+                    f.setShort(t, (short) eo.get("danio").getAsInt());
+                } catch (Exception ignored) {
+                }
+            }
+            if (eo.has("posX") && eo.has("posY")) {
+                t.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return t;
+        } else if (ascii == 'K') {
+            Llave k = new Llave();
+            if (eo.has("posX") && eo.has("posY")) {
+                k.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return k;
+        } else {
+            // unknown entity: create a generic anonymous Entidad to hold position and ascii
+            Entidad e = new Entidad() {
+                @Override
+                public void interact(Jugador player) {
+                }
+            };
+            e.ascii = ascii;
+            if (eo.has("posX") && eo.has("posY")) {
+                e.setPosition(eo.get("posX").getAsInt(), eo.get("posY").getAsInt());
+            }
+            return e;
         }
     }
 
