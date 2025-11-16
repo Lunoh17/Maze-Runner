@@ -1,0 +1,57 @@
+package Menu_Registro;
+
+public class CompararDatos extends RegistroArchivo{
+    private Usuario usuario;
+    private Contrasenia contrasenia;
+
+    public CompararDatos(Usuario usuario){
+        this.usuario = usuario;
+    }
+    public CompararDatos(Usuario usuario, Contrasenia contrasenia){
+        this.usuario = usuario;
+        this.contrasenia = contrasenia;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Contrasenia getContrasenia() {
+        return contrasenia;
+    }
+    public void setContrasenia(Contrasenia contrasenia) {
+        this.contrasenia = contrasenia;
+    }
+
+    public boolean EnviarDatosRegistro(){
+        String AuxUsuario = usuario.getCorreo();
+        String AuxContrasenia = contrasenia.getContrasenia();
+        if(this.BuscarArchivoRegistro(AuxUsuario)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public boolean EnviarDatosSesion(){
+        String AuxUsuario = usuario.getCorreo();
+        String AuxContrasenia = contrasenia.getContrasenia();
+        if(this.BuscarArchivoSesion(AuxUsuario,AuxContrasenia)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public boolean EnviarDatosContrasenia(){
+        String AuxUsuario = usuario.getCorreo();
+        if(this.BuscarArchivoContrasenia(AuxUsuario)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
+}
