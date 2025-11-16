@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentación de la API - MazeRunner 1.0-SNAPSHOT</title>
+  <style>
+    :root { --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --link:#60a5fa; --accent:#34d399; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background: var(--bg); color: var(--text); }
+    header { padding: 24px 32px; border-bottom: 1px solid #1f2937; background: linear-gradient(180deg, #0b1220, #0f172a 40%); }
+    header h1 { margin:0 0 6px; font-size: 22px; font-weight: 600; letter-spacing: .2px; }
+    header .meta { color: var(--muted); font-size: 13px; }
+    main { display:flex; gap:24px; padding: 24px 32px; }
+    nav { width: 260px; flex:0 0 auto; background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 16px; height: fit-content; position: sticky; top: 16px; }
+    nav h2 { font-size: 13px; color: var(--muted); font-weight: 600; margin:0 0 10px; text-transform: uppercase; letter-spacing: .5px; }
+    nav .pkg { margin-bottom: 8px; }
+    nav a { color: var(--link); text-decoration: none; }
+    section { flex: 1 1 auto; }
+    .card { background: var(--panel); border: 1px solid #1f2937; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+    .card h3 { margin:0; padding: 12px 16px; border-bottom: 1px solid #1f2937; font-size: 15px; letter-spacing: .2px; background: #0b1220; }
+    .list { padding: 4px 8px 12px; display:grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 8px 12px; }
+    .item { padding: 10px 12px; border: 1px solid #1f2937; border-radius: 10px; background: #0f172a; }
+    .item .name { font-weight: 600; }
+    .item .desc { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
+    .footer { color: var(--muted); font-size: 12px; padding: 12px 32px 28px; }
+    .pkg-badge { display:inline-block; font-size: 11px; color:#94a3b8; background:#0b1220; border:1px solid #1f2937; padding:2px 8px; border-radius: 999px; margin-left: 8px; }
+    .src { color:#a7f3d0; font-size: 12px; text-decoration: none; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>MazeRunner API</h1>
+  <div class="meta">Versión 1.0-SNAPSHOT · Paquetes: 1 · Generado: <span id="genDate"></span></div>
+  <script>document.getElementById('genDate').textContent=new Date().toLocaleString('es-ES');</script>
+</header>
+<main>
+  <nav>
+    <h2>Paquetes</h2>
+    <div class="pkg">
+      <a href="#pkg-MazeRunner.ucab.edu.ve">MazeRunner.ucab.edu.ve</a>
+    </div>
+  </nav>
+  <section id="pkg-MazeRunner.ucab.edu.ve">
+    <div class="card">
+      <h3>Paquete MazeRunner.ucab.edu.ve <span class="pkg-badge">Clases, Interfaces y Enums</span></h3>
+      <div class="list">
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/AESCifrado.java">AESCifrado</a></div>
+          <div class="desc">Gestiona operaciones de cifrado y descifrado mediante el algoritmo AES. Provee utilidades estáticas para cifrar y descifrar cadenas en Base64.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Celda.java">Celda</a></div>
+          <div class="desc">Representa una celda del laberinto que puede contener múltiples entidades. Proporciona utilidades para gestionar y mostrar su contenido.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/CompararDatos.java">CompararDatos</a></div>
+          <div class="desc">Encapsula la lógica para comparar y verificar datos de usuario contra registros almacenados. Permite validar registro, inicio de sesión y recuperación de contraseña.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Contrasenia.java">Contrasenia</a></div>
+          <div class="desc">Representa una contraseña de usuario y provee validación de formato. Verifica longitud mínima, mayúsculas y caracteres especiales.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/ControladorBD.java">ControladorBD</a></div>
+          <div class="desc">Controla la persistencia del estado del laberinto en archivos JSON. Administra la ruta de guardado por usuario y maneja la escritura en UTF-8.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Cristal.java">Cristal</a></div>
+          <div class="desc">Entidad recolectable que otorga puntos al jugador al interactuar. Se representa en el laberinto con el carácter 'C'.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Enemigo.java">Enemigo</a></div>
+          <div class="desc">Entidad hostil que se mueve por el laberinto y causa daño al jugador. Implementa comportamiento de Movimiento aleatorio.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Entidad.java">Entidad</a></div>
+          <div class="desc">Clase base abstracta para todas las entidades dentro del laberinto. Define posición, representación ASCII e interacción con el jugador.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/GuardarDatos.java">GuardarDatos</a></div>
+          <div class="desc">Construye y persiste el formato de registro de usuario en un archivo de texto. Utiliza RegistroArchivo para realizar la escritura en disco.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Jugador.java">Jugador</a></div>
+          <div class="desc">Representa al jugador dentro del laberinto, con vidas, puntos y llaves. Implementa el control de movimiento y la interacción con otras entidades.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Laberinto.java">Laberinto</a></div>
+          <div class="desc">Representa el laberinto, su generación, visualización y lógica de juego. Administra celdas, entidades y carga/guardado desde archivos JSON.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Llave.java">Llave</a></div>
+          <div class="desc">Entidad coleccionable requerida para abrir la puerta de salida. Se representa con el carácter 'K' y aumenta el contador de llaves del jugador.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Main.java">Main</a></div>
+          <div class="desc">Punto de entrada de la aplicación Maze Runner. Orquesta el menú principal y el ciclo de juego/carga de partidas.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Menu.java">Menu</a></div>
+          <div class="desc">Proporciona las interfaces de consola para registro, inicio de sesión y navegación del menú.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Misc.java">Misc</a></div>
+          <div class="desc">Utilidades varias para la interfaz de consola.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Movimiento.java">Movimiento (interface)</a></div>
+          <div class="desc">Contrato de movimiento para entidades que pueden desplazarse dentro del laberinto.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Puerta.java">Puerta</a></div>
+          <div class="desc">Entidad de salida del laberinto; requiere una llave para activar la victoria. Representada por el carácter 'X'.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/RegistroArchivo.java">RegistroArchivo (abstract)</a></div>
+          <div class="desc">Abstracción de acceso a archivo de registro de usuarios. Ofrece utilidades para guardar, buscar y validar credenciales almacenadas.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Statistics.java">Statistics</a></div>
+          <div class="desc">Maneja el registro y la persistencia de estadísticas de jugadores. Guarda y muestra partidas ganadas/perdidas, total de partidas y puntaje máximo.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Trampa.java">Trampa</a></div>
+          <div class="desc">Entidad de peligro que causa daño al jugador al entrar en su celda. Representada por el carácter 'T'.</div>
+        </div>
+        <div class="item">
+          <div class="name"><a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Usuario.java">Usuario</a></div>
+          <div class="desc">Representa un usuario del sistema identificado por su correo electrónico. Ofrece validación básica del formato de correo.</div>
+        </div>
+        <div class="item">
+          <div class="name">Laberinto.DIR (enum) — <a class="src" href="src/main/java/MazeRunner/ucab/edu/ve/Laberinto.java">ver en Laberinto.java</a></div>
+          <div class="desc">Direcciones cardinales del laberinto con bits de pared y desplazamientos.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="footer">Este índice fue generado automáticamente a partir de los Javadoc presentes en el código fuente. Para generar la documentación completa estilo Javadoc estándar, ejecute con Maven: <code>mvn javadoc:javadoc</code>.</div>
+</body>
+</html>
+

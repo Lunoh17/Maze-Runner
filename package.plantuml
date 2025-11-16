@@ -1,0 +1,207 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class AESCifrado {
+  + AESCifrado(): 
+  + Descifrado(String): String
+  + Cifrado(String): String
+   key: Key
+}
+class Celda {
+  + Celda(): 
+  + removeEntidad(Entidad): void
+  + addEntidad(Entidad): void
+  + cantidadEntidades(): int
+  + obtenerAscii(): char
+  + obtenerContenido(): Set<Entidad>
+}
+class CompararDatos {
+  + CompararDatos(Usuario): 
+  + CompararDatos(Usuario, Contrasenia): 
+  - usuario: Usuario
+  - contrasenia: Contrasenia
+  + EnviarDatosRegistro(): boolean
+  + EnviarDatosSesion(): boolean
+  + EnviarDatosContrasenia(): boolean
+   usuario: Usuario
+   contrasenia: Contrasenia
+}
+class Contrasenia {
+  + Contrasenia(String): 
+  + Contrasenia(): 
+  + Contrasenia(String, String): 
+  - contrasenia: String
+  - confirContrasenia: String
+  + PassValidacion(String, String): boolean
+   contrasenia: String
+   confirContrasenia: String
+}
+class ControladorBD {
+  + ControladorBD(): 
+  - sanitizeForFile(String): String
+  + guardar(Laberinto): void
+}
+class Cristal {
+  + Cristal(): 
+  + interact(Jugador): void
+}
+class Enemigo {
+  + Enemigo(): 
+  + movimiento(Laberinto): int
+}
+class Entidad {
+  + Entidad(): 
+  # posX: int
+  # posY: int
+  + interact(Jugador): void
+  + setPosition(int, int): void
+  + compareTo(Entidad): int
+  + obtenerAscii(): char
+   posX: int
+   posY: int
+}
+class GuardarDatos {
+  + GuardarDatos(Usuario, Contrasenia): 
+  - usuario: Usuario
+  - contrasenia: Contrasenia
+  + FormatoRegistro(): String
+  + GuardarFormatoRegistro(): void
+   usuario: Usuario
+   contrasenia: Contrasenia
+}
+class Jugador {
+  + Jugador(String, String): 
+  - puntos: int
+  - correoElectronico: String
+  - contrasenia: String
+  - escapado: boolean
+  + movimiento(Laberinto): int
+  + recogerLlave(): void
+  + recibirPuntos(int): void
+  + interact(Jugador): void
+  + taVivo(): boolean
+  + tieneLlave(): boolean
+  + escapar(): void
+  + fromJson(JsonObject): Jugador
+  + recibirDanio(short): void
+   correoElectronico: String
+   escapado: boolean
+   contrasenia: String
+   puntos: int
+}
+class Laberinto {
+  + Laberinto(int): 
+  - Laberinto(int, int, boolean): 
+  + Laberinto(int, int): 
+  + jugador: Jugador
+  - crearEntidadDesdeJson(JsonObject): Entidad
+  - clamp(int): int
+  + cargarJson(String): Laberinto?
+  - between(int, int): boolean
+  - generateMaze(int, int): void
+  + display(): void
+  - finParida(int): boolean
+  + movimientoEntidad(Entidad, DIR): boolean
+  + jugar(): boolean
+  + cargarJson(): Laberinto?
+   jugador: Jugador
+}
+class Llave {
+  + Llave(): 
+  + interact(Jugador): void
+}
+class Main {
+  + Main(): 
+  + main(String[]): void
+}
+class Menu {
+  + Menu(): 
+  + MenuRegistro(): void
+  + pedirCorreo(): String
+  + menuIniciarSesion(): Jugador
+  + pedirContrasenia(): String
+  + MenuInicio(): Jugador?
+  + MenuRecuperar(): void
+  + MenuSesion(): Jugador?
+  + mostrarMenu(): String
+}
+class Misc {
+  + Misc(): 
+  + clearScreen(): void
+}
+interface Movimiento << interface >> {
+  + movimiento(Laberinto): int
+}
+class Puerta {
+  + Puerta(): 
+  + interact(Jugador): void
+}
+class RegistroArchivo {
+  + RegistroArchivo(): 
+  + BuscarArchivoRegistro(String): boolean
+  + BuscarArchivoSesion(String, String): boolean
+  + GuardarArchivo(String): void
+  + BuscarArchivoContrasenia(String): boolean
+}
+class Statistics {
+  + Statistics(): 
+  - players: Map<String, PlayerStats>
+  - statsFile(): File
+  + printAll(): void
+  + recordWin(String, int): void
+  - save(Statistics): void
+  - getOrCreate(Statistics, String): PlayerStats
+  - seedFromSaves(Map<String, PlayerStats>): void
+  - load(): Statistics
+  + recordLoss(String, int): void
+  + recordQuit(String, int): void
+   players: Map<String, PlayerStats>
+}
+class Trampa {
+  + Trampa(): 
+  + interact(Jugador): void
+}
+class Usuario {
+  + Usuario(String): 
+  + Usuario(): 
+  - correo: String
+  + UsuaValidacion(String): String
+   correo: String
+}
+
+Celda           "1" *-[#595959,plain]-> "contenido\n*" Entidad         
+CompararDatos   "1" *-[#595959,plain]-> "contrasenia\n1" Contrasenia     
+CompararDatos    -[#000082,plain]-^  RegistroArchivo 
+CompararDatos   "1" *-[#595959,plain]-> "usuario\n1" Usuario         
+Cristal          -[#000082,plain]-^  Entidad         
+Enemigo          -[#008200,dashed]-^  Movimiento      
+Enemigo          -[#000082,plain]-^  Trampa          
+GuardarDatos    "1" *-[#595959,plain]-> "contrasenia\n1" Contrasenia     
+GuardarDatos     -[#000082,plain]-^  RegistroArchivo 
+GuardarDatos    "1" *-[#595959,plain]-> "usuario\n1" Usuario         
+Jugador         "1" *-[#595959,plain]-> "celdaActual\n1" Celda           
+Jugador          -[#000082,plain]-^  Entidad         
+Jugador          -[#008200,dashed]-^  Movimiento      
+Laberinto       "1" *-[#595959,plain]-> "maze\n*" Celda           
+Laberinto        -[#595959,dashed]->  Celda           : "«create»"
+Laberinto        -[#595959,dashed]->  Cristal         : "«create»"
+Laberinto        -[#595959,dashed]->  Enemigo         : "«create»"
+Laberinto       "1" *-[#595959,plain]-> "entidades\n*" Entidad         
+Laberinto       "1" *-[#595959,plain]-> "jugador\n1" Jugador         
+Laberinto        -[#595959,dashed]->  Jugador         : "«create»"
+Laberinto        -[#595959,dashed]->  Llave           : "«create»"
+Laberinto        -[#595959,dashed]->  Puerta          : "«create»"
+Laberinto        -[#595959,dashed]->  Trampa          : "«create»"
+Llave            -[#000082,plain]-^  Entidad         
+Main             -[#595959,dashed]->  Laberinto       : "«create»"
+Menu             -[#595959,dashed]->  CompararDatos   : "«create»"
+Menu             -[#595959,dashed]->  Contrasenia     : "«create»"
+Menu             -[#595959,dashed]->  GuardarDatos    : "«create»"
+Menu             -[#595959,dashed]->  Jugador         : "«create»"
+Menu             -[#595959,dashed]->  Usuario         : "«create»"
+Puerta           -[#000082,plain]-^  Entidad         
+Trampa           -[#000082,plain]-^  Entidad         
+@enduml

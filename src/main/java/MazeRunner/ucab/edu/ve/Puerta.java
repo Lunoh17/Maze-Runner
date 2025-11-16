@@ -1,13 +1,21 @@
 package MazeRunner.ucab.edu.ve;
 
+/**
+ * Entidad de salida del laberinto; requiere una llave para activar la victoria.
+ * Representada por el carácter 'X'.
+ */
 public class Puerta extends Entidad {
+    /**
+     * Crea una puerta cerrada representada por 'X'.
+     */
     public Puerta() {
         super();
         this.ascii = 'X';
     }
 
     /**
-     * @param jugador
+     * Intenta abrir la puerta; si el jugador tiene una llave, se marca la victoria.
+     * @param jugador jugador que interactúa con la puerta
      */
     @Override
     public void interact(Jugador jugador) {
