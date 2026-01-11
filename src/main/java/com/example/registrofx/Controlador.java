@@ -30,7 +30,7 @@ public class Controlador {
     }
 
     public void irALogin(ActionEvent event) throws IOException {
-        cambiarEscena(event, "panel-principal.fxml"); // Ajusta el nombre exacto de tu archivo
+        cambiarEscena(event, "panel-principal.fxml");
     }
 
     public void irARegistro(ActionEvent event) throws IOException {
